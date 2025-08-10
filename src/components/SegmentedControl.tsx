@@ -2,16 +2,16 @@
 
 import clsx from 'clsx'
 
-type Option = { value: string; label: string }
+type Option<T extends string = string> = { value: T; label: string }
 
-export function SegmentedControl({
+export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
 }: {
-  options: Option[]
-  value: string
-  onChange: (val: string) => void
+  options: ReadonlyArray<Option<T>>
+  value: T
+  onChange: (val: T) => void
 }) {
   return (
     <div className="inline-flex overflow-hidden rounded-md border border-white/10 bg-white/10 p-1">
