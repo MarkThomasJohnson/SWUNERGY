@@ -15,7 +15,6 @@ import { DeckStatistics } from '@/components/DeckStatistics'
 import { QuickActions, type QuickActionsRef } from '@/components/QuickActions'
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { useDeckStore } from '@/store/deckStore'
-import { swudbClient, convertSWUDBCard } from '@/lib/swudb'
 import type { Card, Aspect } from '@/lib/types'
 
 const VIEWS = [
@@ -48,22 +47,13 @@ export default function BuilderPage() {
         setIsLoading(true)
         setError(null)
         
-        const [leaders, bases, units, events, upgrades] = await Promise.all([
-          swudbClient.getLeaders(),
-          swudbClient.getBases(),
-          swudbClient.getUnits(),
-          swudbClient.getEvents(),
-          swudbClient.getUpgrades(),
-        ])
-
-        const allCards = [
-          ...leaders.map(convertSWUDBCard),
-          ...bases.map(convertSWUDBCard),
-          ...units.map(convertSWUDBCard),
-          ...events.map(convertSWUDBCard),
-          ...upgrades.map(convertSWUDBCard),
-        ]
-
+        // Use our local API endpoint instead of external SWUDB calls
+        const response = await fetch('/api/cards')
+        if (!response.ok) {
+          throw new Error(`Failed to fetch cards: ${response.status}`)
+        }
+        
+        const allCards = await response.json()
         setCards(allCards)
       } catch (err) {
         console.error('Failed to fetch cards:', err)
