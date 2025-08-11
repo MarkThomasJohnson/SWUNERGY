@@ -12,6 +12,8 @@ interface GalleryViewProps {
   selectedAspects: string[]
   selectedTypes: string[]
   selectedSets: string[]
+  selectedRarities: string[]
+  onRaritiesChange: (rarities: string[]) => void
 }
 
 export function GalleryView({
@@ -22,6 +24,8 @@ export function GalleryView({
   selectedAspects,
   selectedTypes,
   selectedSets,
+  selectedRarities,
+  onRaritiesChange,
 }: GalleryViewProps) {
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
@@ -59,9 +63,16 @@ export function GalleryView({
         }
       }
 
+      // Rarity filter
+      if (selectedRarities.length > 0) {
+        if (!card.rarity || !selectedRarities.includes(card.rarity)) {
+          return false
+        }
+      }
+
       return true
     })
-  }, [cards, searchQuery, selectedAspects, selectedTypes, selectedSets])
+  }, [cards, searchQuery, selectedAspects, selectedTypes, selectedSets, selectedRarities])
 
   const sortedCards = useMemo(() => {
     return [...filteredCards].sort((a, b) => {

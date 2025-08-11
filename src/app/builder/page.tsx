@@ -196,6 +196,8 @@ export default function BuilderPage() {
               selectedAspects={selectedAspects}
               selectedTypes={selectedTypes}
               selectedSets={selectedSets}
+              selectedRarities={selectedRarities}
+              onRaritiesChange={setSelectedRarities}
             />
           ) : (
             <GalleryView
@@ -206,6 +208,8 @@ export default function BuilderPage() {
               selectedAspects={selectedAspects}
               selectedTypes={selectedTypes}
               selectedSets={selectedSets}
+              selectedRarities={selectedRarities}
+              onRaritiesChange={setSelectedRarities}
             />
           )}
         </div>
