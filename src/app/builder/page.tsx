@@ -30,6 +30,11 @@ export default function BuilderPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const {
+    selectedLeader, selectedBase, setLeader, setBase, setEntryCount,
+    getMainDeckCards, getTotalCount,
+  } = useDeckStore()
+
   // Fetch all cards on component mount
   useEffect(() => {
     const fetchCards = async () => {
@@ -81,6 +86,10 @@ export default function BuilderPage() {
   const mainDeckTotal = getTotalCount('main')
   const sideboardTotal = getTotalCount('side')
   const overflowTotal = getTotalCount('overflow')
+
+  // Extract leaders and bases for the selector
+  const leaders = cards.filter(card => card.type === 'leader')
+  const bases = cards.filter(card => card.type === 'base')
 
   // Show loading state
   if (isLoading) {

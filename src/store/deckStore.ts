@@ -15,6 +15,7 @@ interface DeckState {
   getMainDeckCards: () => Array<{ cardId: string; count: number }>
   getSideboardCards: () => Array<{ cardId: string; count: number }>
   getOverflowCards: () => Array<{ cardId: string; count: number }>
+  getCardById: (cardId: string, allCards: Card[]) => Card | undefined
   validateDeck: () => { isValid: boolean; errors: string[] }
   getAspectSynergies: () => Array<{ card: Card; synergies: string[] }>
 }
@@ -118,6 +119,11 @@ export const useDeckStore = create<DeckState>((set, get) => ({
     }))
   },
 
+  // Helper function to get card by ID (will be used by components)
+  getCardById: (cardId: string, allCards: Card[]): Card | undefined => {
+    return allCards.find(card => card.id === cardId)
+  },
+
   validateDeck: () => {
     const state = get()
     const errors: string[] = []
@@ -146,6 +152,17 @@ export const useDeckStore = create<DeckState>((set, get) => ({
     const overflowCount = state.getTotalCount('overflow')
     if (overflowCount > 0) {
       errors.push(`Overflow contains ${overflowCount} cards - move them to main deck or sideboard`)
+    }
+
+    // Check aspect compatibility (leader and base should share at least one aspect)
+    if (state.selectedLeader && state.selectedBase) {
+      const leaderAspects = state.selectedLeader.aspects
+      const baseAspects = state.selectedBase.aspects
+      const sharedAspects = leaderAspects.filter(aspect => baseAspects.includes(aspect))
+      
+      if (sharedAspects.length === 0) {
+        errors.push('Leader and base must share at least one aspect for a valid deck')
+      }
     }
 
     return {
