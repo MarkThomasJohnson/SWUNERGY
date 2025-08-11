@@ -2,14 +2,14 @@
 
 import clsx from 'clsx'
 
-type Option<T extends string = string> = { value: T; label: string }
+type Option = { readonly value: string; readonly label: string }
 
 export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
 }: {
-  options: ReadonlyArray<Option<T>>
+  options: ReadonlyArray<{ readonly value: T; readonly label: string }>
   value: T
   onChange: (val: T) => void
 }) {

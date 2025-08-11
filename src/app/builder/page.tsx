@@ -7,16 +7,14 @@ import { useDeckStore } from '@/store/deckStore'
 import type { Card } from '@/lib/types'
 import { validateDeck } from '@/lib/rules'
 
-type View = 'list' | 'gallery' | 'canvas'
-
-const VIEWS: ReadonlyArray<{ value: View; label: string }> = [
+const VIEWS = [
   { value: 'list', label: 'List' },
   { value: 'gallery', label: 'Gallery' },
   { value: 'canvas', label: 'Canvas' },
 ] as const
 
 export default function BuilderPage() {
-  const [view, setView] = useState<View>('list')
+  const [view, setView] = useState<(typeof VIEWS)[number]['value']>('list')
   const [cards, setCards] = useState<Card[]>([])
   const version = useDeckStore((s) => s.version)
 
@@ -35,7 +33,7 @@ export default function BuilderPage() {
   return (
     <main className="space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <SegmentedControl<View> options={VIEWS} value={view} onChange={setView} />
+        <SegmentedControl<typeof VIEWS[number]['value']> options={VIEWS} value={view} onChange={setView} />
         <DeckCountsBar values={validation.totals} />
       </div>
 
