@@ -13,6 +13,10 @@ export interface Card {
   unique: boolean
   text?: string
   imageUrl?: string
+  rarity?: string
+  attack?: number
+  health?: number
+  defense?: number
 }
 
 export interface DeckEntry {
