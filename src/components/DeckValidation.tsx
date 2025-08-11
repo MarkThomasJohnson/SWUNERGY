@@ -6,6 +6,7 @@ export function DeckValidation() {
   const { validateDeck, getTotalCount } = useDeckStore()
   
   const validation = validateDeck()
+  const { isValid, errors, warnings } = validation
   const mainDeckCount = getTotalCount('main')
   const sideboardCount = getTotalCount('side')
   const overflowCount = getTotalCount('overflow')
@@ -83,7 +84,7 @@ export function DeckValidation() {
 
       {/* Validation Status */}
       <div className="mt-4 pt-4 border-t border-white/10">
-        {validation.isValid ? (
+        {isValid ? (
           <div className="flex items-center gap-2 text-green-400">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -99,13 +100,35 @@ export function DeckValidation() {
               <span className="font-medium">Deck has issues:</span>
             </div>
             <ul className="text-sm text-white/80 space-y-1 ml-7">
-              {validation.errors.map((error, index) => (
+              {errors.map((error, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <span className="text-red-400 mt-1">•</span>
                   <span>{error}</span>
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Warnings */}
+        {warnings.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-yellow-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <span className="font-medium">Suggestions:</span>
+              </div>
+              <ul className="text-sm text-white/80 space-y-1 ml-7">
+                {warnings.map((warning, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="text-yellow-400 mt-1">•</span>
+                    <span>{warning}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
       </div>

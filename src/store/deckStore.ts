@@ -16,8 +16,8 @@ interface DeckState {
   getSideboardCards: () => Array<{ cardId: string; count: number }>
   getOverflowCards: () => Array<{ cardId: string; count: number }>
   getCardById: (cardId: string, allCards: Card[]) => Card | undefined
-  validateDeck: () => { isValid: boolean; errors: string[] }
-  getAspectSynergies: () => Array<{ card: Card; synergies: string[] }>
+  validateDeck: () => { isValid: boolean; errors: string[]; warnings: string[] }
+  getAspectSynergies: (allCards: Card[]) => Array<{ card: Card; synergies: string[] }>
 }
 
 const emptyVersion: DeckVersion = {
@@ -127,6 +127,7 @@ export const useDeckStore = create<DeckState>((set, get) => ({
   validateDeck: () => {
     const state = get()
     const errors: string[] = []
+    const warnings: string[] = []
 
     // Check if leader and base are selected
     if (!state.selectedLeader) {
@@ -162,29 +163,104 @@ export const useDeckStore = create<DeckState>((set, get) => ({
       
       if (sharedAspects.length === 0) {
         errors.push('Leader and base must share at least one aspect for a valid deck')
+      } else if (sharedAspects.length === 1) {
+        warnings.push('Leader and base share only one aspect - consider diversifying for more strategic options')
+      }
+    }
+
+    // Check for unique card violations (unique cards can only have 1 copy)
+    const mainEntries = state.version.mainEntries
+    const sideEntries = state.version.sideEntries
+    
+    // This would need to be enhanced when we have access to allCards to check unique property
+    // For now, we'll add a placeholder for this validation
+    
+    // Check cost curve balance (warnings, not errors)
+    const mainDeckCards = mainEntries.map(entry => entry.count).reduce((sum, count) => sum + count, 0)
+    if (mainDeckCards === 50) {
+      // We could add cost curve analysis here when we have card data
+      warnings.push('Consider analyzing your cost curve for optimal mana distribution')
+    }
+
+    // Check for aspect diversity (warnings, not errors)
+    if (state.selectedLeader && state.selectedBase) {
+      const allAspects = [...new Set([...state.selectedLeader.aspects, ...state.selectedBase.aspects])]
+      if (allAspects.length < 3) {
+        warnings.push('Consider including more aspects for strategic flexibility')
       }
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
+      warnings
     }
   },
 
-  getAspectSynergies: () => {
+  getAspectSynergies: (allCards: Card[]) => {
     const state = get()
     if (!state.selectedLeader || !state.selectedBase) {
       return []
     }
 
     // Get all cards in the deck
-    const allCards: Card[] = []
+    const deckCards: Card[] = []
 
     // Add leader and base
-    allCards.push(state.selectedLeader, state.selectedBase)
+    deckCards.push(state.selectedLeader, state.selectedBase)
 
-    // Add main deck cards (we'd need to fetch the actual Card objects here)
-    // For now, return empty array - this will be enhanced when we have card lookup
-    return []
+    // Add main deck cards
+    state.version.mainEntries.forEach(entry => {
+      const card = allCards.find(c => c.id === entry.cardId)
+      if (card) {
+        for (let i = 0; i < entry.count; i++) {
+          deckCards.push(card)
+        }
+      }
+    })
+
+    // Analyze synergies between cards
+    const synergies: Array<{ card: Card; synergies: string[] }> = []
+
+    deckCards.forEach(card => {
+      const cardSynergies: string[] = []
+
+      // Check for aspect synergies
+      const sharedAspects = card.aspects.filter(aspect => 
+        state.selectedLeader?.aspects.includes(aspect) || 
+        state.selectedBase?.aspects.includes(aspect)
+      )
+      
+      if (sharedAspects.length > 0) {
+        cardSynergies.push(`Shares ${sharedAspects.join(', ')} aspect(s)`)
+      }
+
+      // Check for text-based synergies
+      if (card.text) {
+        const text = card.text.toLowerCase()
+        
+        // Look for combo potential
+        deckCards.forEach(otherCard => {
+          if (otherCard.id !== card.id && otherCard.text) {
+            const otherText = otherCard.text.toLowerCase()
+            
+            // Check for trigger synergies
+            if (text.includes('when played') && otherText.includes('ambush')) {
+              cardSynergies.push('Combo: Can trigger "when played" effects with Ambush cards')
+            }
+            
+            if (text.includes('bounce') && otherText.includes('when this enters play')) {
+              cardSynergies.push('Combo: Bounce + ETB effects for card advantage')
+            }
+          }
+        })
+      }
+
+      if (cardSynergies.length > 0) {
+        synergies.push({ card, synergies: cardSynergies })
+      }
+    })
+
+    return synergies
   },
 }))

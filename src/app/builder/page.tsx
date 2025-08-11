@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { DeckCountsBar } from '@/components/DeckCountsBar'
 import { LeaderBaseSelector } from '@/components/LeaderBaseSelector'
@@ -11,6 +11,9 @@ import { DeckValidation } from '@/components/DeckValidation'
 import { AspectSynergies } from '@/components/AspectSynergies'
 import { DeckAreas } from '@/components/DeckAreas'
 import { DeckExport } from '@/components/DeckExport'
+import { DeckStatistics } from '@/components/DeckStatistics'
+import { QuickActions, type QuickActionsRef } from '@/components/QuickActions'
+import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { useDeckStore } from '@/store/deckStore'
 import { swudbClient, convertSWUDBCard } from '@/lib/swudb'
 import type { Card, Aspect } from '@/lib/types'
@@ -26,9 +29,12 @@ export default function BuilderPage() {
   const [selectedAspects, setSelectedAspects] = useState<Aspect[]>([])
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
   const [selectedSets, setSelectedSets] = useState<string[]>([])
+  const [selectedRarities, setSelectedRarities] = useState<string[]>([])
   const [cards, setCards] = useState<Card[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const quickActionsRef = useRef<QuickActionsRef>(null)
 
   const {
     selectedLeader, selectedBase, setLeader, setBase, setEntryCount,
@@ -175,6 +181,8 @@ export default function BuilderPage() {
                       onTypesChange={setSelectedTypes}
                       selectedSets={selectedSets}
                       onSetsChange={setSelectedSets}
+                      selectedRarities={selectedRarities}
+                      onRaritiesChange={setSelectedRarities}
                     />
                   </div>
 
@@ -208,6 +216,14 @@ export default function BuilderPage() {
           <DeckAreas allCards={cards} />
           <AspectSynergies allCards={cards} />
           <DeckExport allCards={cards} />
+          <DeckStatistics allCards={cards} />
+          <QuickActions ref={quickActionsRef} allCards={cards} />
+          <KeyboardShortcuts 
+            onClearDeck={() => quickActionsRef.current?.handleClearDeck()}
+            onAutoFill={() => quickActionsRef.current?.handleAutoFill()}
+            onRandomDeck={() => quickActionsRef.current?.handleRandomDeck()}
+            onBalanceAspects={() => quickActionsRef.current?.handleBalanceAspects()}
+          />
         </div>
       </div>
     </main>

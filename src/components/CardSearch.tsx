@@ -13,11 +13,14 @@ interface CardSearchProps {
   onTypesChange: (types: string[]) => void
   selectedSets: string[]
   onSetsChange: (sets: string[]) => void
+  selectedRarities: string[]
+  onRaritiesChange: (rarities: string[]) => void
 }
 
 const ASPECTS: Aspect[] = ['aggression', 'cunning', 'command', 'vigilance', 'heroism', 'villainy']
 const CARD_TYPES = ['unit', 'event', 'upgrade', 'base', 'leader']
 const SETS = ['SOR', 'SOR2', 'SOR3'] // Add more sets as needed
+const RARITIES = ['common', 'uncommon', 'rare', 'legendary']
 
 export function CardSearch({
   query,
@@ -28,6 +31,8 @@ export function CardSearch({
   onTypesChange,
   selectedSets,
   onSetsChange,
+  selectedRarities,
+  onRaritiesChange,
 }: CardSearchProps) {
   const toggleAspect = (aspect: Aspect) => {
     if (selectedAspects.includes(aspect)) {
@@ -53,11 +58,20 @@ export function CardSearch({
     }
   }
 
+  const toggleRarity = (rarity: string) => {
+    if (selectedRarities.includes(rarity)) {
+      onRaritiesChange(selectedRarities.filter(r => r !== rarity))
+    } else {
+      onRaritiesChange([...selectedRarities, rarity])
+    }
+  }
+
   const clearFilters = () => {
     onQueryChange('')
     onAspectsChange([])
     onTypesChange([])
     onSetsChange([])
+    onRaritiesChange([])
   }
 
   const hasActiveFilters = query || selectedAspects.length > 0 || selectedTypes.length > 0 || selectedSets.length > 0
@@ -148,6 +162,27 @@ export function CardSearch({
                 )}
               >
                 {set}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Rarities */}
+        <div>
+          <h4 className="text-sm font-medium text-white/80 mb-2">Rarities</h4>
+          <div className="flex flex-wrap gap-2">
+            {RARITIES.map((rarity) => (
+              <button
+                key={rarity}
+                onClick={() => toggleRarity(rarity)}
+                className={clsx(
+                  'px-3 py-1.5 text-sm rounded-full border transition-colors capitalize',
+                  selectedRarities.includes(rarity)
+                    ? 'bg-brand-600 border-brand-500 text-white'
+                    : 'border-white/20 text-white/70 hover:bg-white/10 hover:text-white'
+                )}
+              >
+                {rarity}
               </button>
             ))}
           </div>
