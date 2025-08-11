@@ -30,6 +30,17 @@ export function CardComponent({
     onCountChange(newCount)
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent, action: 'increment' | 'decrement') => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      if (action === 'increment') {
+        onCountChange(count + 1)
+      } else {
+        onCountChange(Math.max(0, count - 1))
+      }
+    }
+  }
+
   const moveToArea = (area: 'main' | 'side' | 'overflow') => {
     const currentCount = getCardCount(card.id, 'main') + getCardCount(card.id, 'side') + getCardCount(card.id, 'overflow')
     if (currentCount === 0) return
@@ -104,15 +115,19 @@ export function CardComponent({
               <div className="flex flex-col gap-1">
                 <button
                   onClick={() => onCountChange(count + 1)}
-                  className="w-8 h-8 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-colors flex items-center justify-center"
-                  title="Add card"
+                  onKeyDown={(e) => handleKeyDown(e, 'increment')}
+                  className="w-8 h-8 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+                  title="Add card (Enter/Space)"
+                  aria-label={`Add ${card.name} to deck`}
                 >
                   +
                 </button>
                 <button
                   onClick={() => onCountChange(Math.max(0, count - 1))}
-                  className="w-8 h-8 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold transition-colors flex items-center justify-center"
-                  title="Remove card"
+                  onKeyDown={(e) => handleKeyDown(e, 'decrement')}
+                  className="w-8 h-8 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+                  title="Remove card (Enter/Space)"
+                  aria-label={`Remove ${card.name} from deck`}
                 >
                   -
                 </button>
@@ -133,20 +148,26 @@ export function CardComponent({
                 <button
                   onClick={() => moveToArea('main')}
                   disabled={getAreaCount('main') >= 3}
-                  className="px-3 py-1.5 text-xs rounded bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-1.5 text-xs rounded bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+                  title="Move to main deck"
+                  aria-label={`Move ${card.name} to main deck`}
                 >
                   Main Deck
                 </button>
                 <button
                   onClick={() => moveToArea('side')}
                   disabled={getAreaCount('side') >= 3}
-                  className="px-3 py-1.5 text-xs rounded bg-yellow-600 hover:bg-yellow-500 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-1.5 text-xs rounded bg-yellow-600 hover:bg-yellow-500 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+                  title="Move to sideboard"
+                  aria-label={`Move ${card.name} to sideboard`}
                 >
                   Sideboard
                 </button>
                 <button
                   onClick={() => moveToArea('overflow')}
-                  className="px-3 py-1.5 text-xs rounded bg-red-600 hover:bg-red-500 transition-colors"
+                  className="px-3 py-1.5 text-xs rounded bg-red-600 hover:bg-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+                  title="Move to overflow"
+                  aria-label={`Move ${card.name} to overflow`}
                 >
                   Overflow
                 </button>
