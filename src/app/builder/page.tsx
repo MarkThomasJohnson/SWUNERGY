@@ -168,62 +168,52 @@ export default function BuilderPage() {
       />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-        {/* Left Column - Search and Cards */}
-        <div className="xl:col-span-2 space-y-6">
-          {/* Search and Filters */}
-          <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-            <CardSearch
-              query={searchQuery}
-              onQueryChange={setSearchQuery}
-              selectedAspects={selectedAspects}
-              onAspectsChange={setSelectedAspects}
-              selectedTypes={selectedTypes}
-              onTypesChange={setSelectedTypes}
-              selectedSets={selectedSets}
-              onSetsChange={setSelectedSets}
-            />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+                        {/* Left Column - Search and Cards */}
+                <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+                  {/* Search and Filters */}
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+                    <CardSearch
+                      query={searchQuery}
+                      onQueryChange={setSearchQuery}
+                      selectedAspects={selectedAspects}
+                      onAspectsChange={setSelectedAspects}
+                      selectedTypes={selectedTypes}
+                      onTypesChange={setSelectedTypes}
+                      selectedSets={selectedSets}
+                      onSetsChange={setSelectedSets}
+                    />
+                  </div>
 
-          {/* Card View */}
-          <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-            {view === 'list' && (
-              <ListView
-                cards={cards}
-                deckEntries={mainDeckCards}
-                onCountChange={handleCardCountChange}
-                searchQuery={searchQuery}
-                selectedAspects={selectedAspects}
-                selectedTypes={selectedTypes}
-                selectedSets={selectedSets}
-              />
-            )}
-            {view === 'gallery' && (
-              <GalleryView
-                cards={cards}
-                deckEntries={mainDeckCards}
-                onCountChange={handleCardCountChange}
-                searchQuery={searchQuery}
-                selectedAspects={selectedAspects}
-                selectedTypes={selectedTypes}
-                selectedSets={selectedSets}
-              />
-            )}
-          </div>
+                  {/* Card View (List/Gallery) */}
+                  {view === 'list' ? (
+            <ListView
+              cards={cards}
+              deckEntries={mainDeckCards}
+              onCountChange={handleCardCountChange}
+              searchQuery={searchQuery}
+              selectedAspects={selectedAspects}
+              selectedTypes={selectedTypes}
+              selectedSets={selectedSets}
+            />
+          ) : (
+            <GalleryView
+              cards={cards}
+              deckEntries={mainDeckCards}
+              onCountChange={handleCardCountChange}
+              searchQuery={searchQuery}
+              selectedAspects={selectedAspects}
+              selectedTypes={selectedTypes}
+              selectedSets={selectedSets}
+            />
+          )}
         </div>
 
         {/* Right Column - Deck Management */}
-        <div className="xl:col-span-2 space-y-6">
-          {/* Deck Validation */}
+        <div className="lg:col-span-1 xl:col-span-2 space-y-4 lg:space-y-6">
           <DeckValidation />
-
-          {/* Deck Areas (Sideboard/Overflow) */}
           <DeckAreas allCards={cards} />
-
-          {/* Aspect Synergies */}
           <AspectSynergies allCards={cards} />
-
-          {/* Deck Export */}
           <DeckExport allCards={cards} />
         </div>
       </div>

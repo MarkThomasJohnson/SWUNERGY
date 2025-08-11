@@ -11,53 +11,99 @@ interface AspectSynergiesProps {
 export function AspectSynergies({ allCards }: AspectSynergiesProps) {
   const { selectedLeader, selectedBase, getMainDeckCards } = useDeckStore()
   
-  const synergies = useMemo(() => {
+  // Enhanced synergy detection logic
+  const getSynergyScore = (card: Card): { score: number; reasons: string[] } => {
+    const reasons: string[] = []
+    let score = 0
+
+    // Aspect synergy (higher weight)
+    if (selectedLeader && card.aspects.some(aspect => selectedLeader.aspects.includes(aspect))) {
+      score += 3
+      reasons.push(`Shares ${card.aspects.filter(a => selectedLeader.aspects.includes(a)).join(', ')} aspect with leader`)
+    }
+    
+    if (selectedBase && card.aspects.some(aspect => selectedBase.aspects.includes(aspect))) {
+      score += 2
+      reasons.push(`Shares ${card.aspects.filter(a => selectedBase.aspects.includes(a)).join(', ')} aspect with base`)
+    }
+
+    // Text-based synergies
+    if (card.text) {
+      const text = card.text.toLowerCase()
+      
+      // High-value synergies
+      if (text.includes('when played') || text.includes('when this enters play')) {
+        score += 4
+        reasons.push('Has "when played" trigger - great for combos')
+      }
+      
+      if (text.includes('ambush')) {
+        score += 4
+        reasons.push('Has Ambush - can surprise opponents')
+      }
+      
+      if (text.includes('bounce') || text.includes('return to hand')) {
+        score += 3
+        reasons.push('Has bounce effect - good for card advantage')
+      }
+      
+      if (text.includes('draw') || text.includes('card')) {
+        score += 3
+        reasons.push('Provides card draw')
+      }
+      
+      if (text.includes('heal') || text.includes('health')) {
+        score += 2
+        reasons.push('Provides healing/survivability')
+      }
+      
+      if (text.includes('attack') || text.includes('damage')) {
+        score += 2
+        reasons.push('Provides attack/damage')
+      }
+      
+      if (text.includes('control') || text.includes('stun')) {
+        score += 2
+        reasons.push('Provides control effects')
+      }
+    }
+
+    // Cost curve considerations
+    if (card.cost !== null && card.cost !== undefined) {
+      if (card.cost <= 2) {
+        score += 1
+        reasons.push('Low cost - good for early game')
+      } else if (card.cost >= 5) {
+        score += 1
+        reasons.push('High cost - good for late game')
+      }
+    }
+
+    // Unique card bonus
+    if (card.unique) {
+      score += 1
+      reasons.push('Unique card - powerful effect')
+    }
+
+    return { score, reasons }
+  }
+
+  const recommendedCards = useMemo(() => {
     if (!selectedLeader || !selectedBase) return []
 
-    const leaderAspects = selectedLeader.aspects
-    const baseAspects = selectedBase.aspects
-    const allAspects = [...new Set([...leaderAspects, ...baseAspects])]
-    
-    const mainDeckEntries = getMainDeckCards()
-    const mainDeckCardIds = new Set(mainDeckEntries.map(entry => entry.cardId))
-
-    // Find cards that share aspects with leader/base
-    const aspectMatches = allCards.filter(card => {
-      // Skip if already in main deck
-      if (mainDeckCardIds.has(card.id)) return false
-      
-      // Check if card shares any aspects with leader or base
-      return card.aspects.some(aspect => allAspects.includes(aspect))
+    const availableCards = allCards.filter(card => {
+      const mainCount = getMainDeckCards().find(entry => entry.cardId === card.id)?.count || 0
+      return mainCount === 0 // Only show cards not in main deck
     })
 
-    // Find cards with synergistic abilities
-    const synergisticCards = allCards.filter(card => {
-      if (mainDeckCardIds.has(card.id)) return false
-      
-      const cardText = card.text?.toLowerCase() || ''
-      const leaderText = selectedLeader.text?.toLowerCase() || ''
-      const baseText = selectedBase.text?.toLowerCase() || ''
-      
-      // Look for synergistic keywords
-      const synergyKeywords = [
-        'when played', 'ambush', 'bounce', 'return to hand', 'draw', 'discard',
-        'damage', 'heal', 'protect', 'shield', 'stun', 'exhaust', 'ready'
-      ]
-      
-      return synergyKeywords.some(keyword => 
-        cardText.includes(keyword) || 
-        leaderText.includes(keyword) || 
-        baseText.includes(keyword)
-      )
-    })
-
-    // Combine and sort by relevance
-    const allRecommendations = [...aspectMatches, ...synergisticCards]
-    const uniqueRecommendations = allRecommendations.filter((card, index, self) => 
-      index === self.findIndex(c => c.id === card.id)
-    )
-
-    return uniqueRecommendations.slice(0, 12) // Show top 12 recommendations
+    return availableCards
+      .map(card => ({
+        card,
+        ...getSynergyScore(card)
+      }))
+      .filter(item => item.score > 0) // Only show cards with some synergy
+      .sort((a, b) => b.score - a.score) // Sort by synergy score
+      .slice(0, 12) // Top 12 recommendations
   }, [selectedLeader, selectedBase, allCards, getMainDeckCards])
 
   if (!selectedLeader || !selectedBase) {
@@ -75,7 +121,7 @@ export function AspectSynergies({ allCards }: AspectSynergiesProps) {
     )
   }
 
-  if (synergies.length === 0) {
+  if (recommendedCards.length === 0) {
     return (
       <div className="rounded-lg border border-white/10 bg-white/5 p-4">
         <h3 className="text-lg font-medium text-white mb-4">Card Recommendations</h3>
@@ -119,25 +165,25 @@ export function AspectSynergies({ allCards }: AspectSynergiesProps) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {synergies.map((card) => (
+        {recommendedCards.map((item) => (
           <div
-            key={card.id}
+            key={item.card.id}
             className="p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
           >
             <div className="flex items-start gap-3">
-              {card.imageUrl && (
+              {item.card.imageUrl && (
                 <img
-                  src={card.imageUrl}
-                  alt={card.name}
+                  src={item.card.imageUrl}
+                  alt={item.card.name}
                   className="w-12 h-16 object-cover rounded border border-white/20 flex-shrink-0"
                 />
               )}
               <div className="min-w-0 flex-1">
                 <h5 className="font-medium text-white text-sm leading-tight mb-1">
-                  {card.name}
+                  {item.card.name}
                 </h5>
                 <div className="flex items-center gap-1 mb-2">
-                  {card.aspects.map((aspect) => (
+                  {item.card.aspects.map((aspect) => (
                     <span
                       key={aspect}
                       className="w-2 h-2 rounded-full bg-blue-400"
@@ -146,13 +192,30 @@ export function AspectSynergies({ allCards }: AspectSynergiesProps) {
                   ))}
                 </div>
                 <div className="text-xs text-white/60">
-                  {card.type} • {card.cost !== null ? `${card.cost} cost` : 'No cost'}
+                  {item.card.type} • {item.card.cost !== null ? `${item.card.cost} cost` : 'No cost'}
                 </div>
-                {card.text && (
+                {item.card.text && (
                   <p className="text-xs text-white/70 mt-2 line-clamp-2">
-                    {card.text}
+                    {item.card.text}
                   </p>
                 )}
+                                 <div className="text-xs text-white/50 mt-1">
+                   <div className="font-medium text-blue-300">Synergy Score: {item.score}</div>
+                   {item.reasons.length > 0 && (
+                     <div className="mt-1 space-y-1">
+                       {item.reasons.slice(0, 2).map((reason, idx) => (
+                         <div key={idx} className="text-white/60 text-xs leading-tight">
+                           • {reason}
+                         </div>
+                       ))}
+                       {item.reasons.length > 2 && (
+                         <div className="text-white/40 text-xs">
+                           +{item.reasons.length - 2} more reasons
+                         </div>
+                       )}
+                     </div>
+                   )}
+                 </div>
               </div>
             </div>
           </div>

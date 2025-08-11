@@ -53,6 +53,7 @@ export function CardComponent({
   if (compact) {
     return (
       <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
+        {/* Card Image */}
         {showImage && card.imageUrl && (
           <img
             src={card.imageUrl}
@@ -61,99 +62,97 @@ export function CardComponent({
           />
         )}
         
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h5 className="font-medium text-white text-sm truncate">{card.name}</h5>
-            {card.cost !== null && (
-              <span className="text-xs text-white/60 bg-white/10 px-2 py-1 rounded">
-                {card.cost}
-              </span>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-2 mb-2">
-            <div className="flex items-center gap-1">
-              {card.aspects.map((aspect) => (
-                <span
-                  key={aspect}
-                  className="w-2 h-2 rounded-full bg-blue-400"
-                  title={aspect}
-                />
-              ))}
-            </div>
-            <span className="text-xs text-white/60">{card.type}</span>
-          </div>
-
-          {card.text && (
-            <p className="text-xs text-white/70 line-clamp-2">{card.text}</p>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Area Controls */}
-          {showAreaControls && (
-            <div className="relative">
-              <button
-                onClick={() => setShowAreaMenu(!showAreaMenu)}
-                className="p-1 text-white/60 hover:text-white transition-colors"
-                title="Move to different area"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </button>
-
-              {showAreaMenu && (
-                <div className="absolute right-0 top-full mt-1 w-32 bg-gray-800 border border-white/20 rounded-lg shadow-lg z-10">
-                  <div className="py-1">
-                    <button
-                      onClick={() => moveToArea('main')}
-                      className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors"
-                    >
-                      Main Deck ({getAreaCount('main')})
-                    </button>
-                    <button
-                      onClick={() => moveToArea('side')}
-                      className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors"
-                    >
-                      Sideboard ({getAreaCount('side')})
-                    </button>
-                    <button
-                      onClick={() => moveToArea('overflow')}
-                      className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors"
-                    >
-                      Overflow ({getAreaCount('overflow')})
-                    </button>
-                  </div>
-                </div>
+        {/* Card Info */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <h5 className="font-medium text-white text-sm leading-tight mb-1 line-clamp-2">
+                {card.name}
+              </h5>
+              <div className="flex items-center gap-1 mb-2 flex-wrap">
+                {card.aspects.map((aspect) => (
+                  <span
+                    key={aspect}
+                    className="w-3 h-3 rounded-full bg-blue-400 flex-shrink-0"
+                    title={aspect}
+                  />
+                ))}
+                {card.unique && (
+                  <span className="text-xs text-yellow-400 font-medium px-1.5 py-0.5 bg-yellow-400/10 rounded">
+                    Unique
+                  </span>
+                )}
+              </div>
+              <div className="text-xs text-white/60 mb-2">
+                {card.type} • {card.cost !== null ? `${card.cost} cost` : 'No cost'}
+                {card.attack !== null && ` • ${card.attack} ATK`}
+                {card.health !== null && ` • ${card.health} HP`}
+              </div>
+              {card.text && (
+                <p className="text-xs text-white/70 line-clamp-2">
+                  {card.text}
+                </p>
               )}
             </div>
-          )}
-
-          {/* Count Controls */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => handleCountChange(count - 1)}
-              disabled={count <= 0}
-              className="w-6 h-6 rounded bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-              </svg>
-            </button>
             
-            <span className="w-8 text-center text-white font-medium">{count}</span>
-            
-            <button
-              onClick={() => handleCountChange(count + 1)}
-              disabled={count >= 3}
-              className="w-6 h-6 rounded bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
+            {/* Count Controls */}
+            <div className="flex flex-col items-center gap-2 flex-shrink-0">
+              <div className="text-center">
+                <div className="text-lg font-bold text-white">{count}</div>
+                <div className="text-xs text-white/60">count</div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <button
+                  onClick={() => onCountChange(count + 1)}
+                  className="w-8 h-8 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-colors flex items-center justify-center"
+                  title="Add card"
+                >
+                  +
+                </button>
+                <button
+                  onClick={() => onCountChange(Math.max(0, count - 1))}
+                  className="w-8 h-8 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold transition-colors flex items-center justify-center"
+                  title="Remove card"
+                >
+                  -
+                </button>
+              </div>
+            </div>
           </div>
+          
+          {/* Area Controls (if enabled) */}
+          {showAreaControls && (
+            <div className="mt-3 pt-3 border-t border-white/10">
+              <div className="flex items-center justify-between text-xs text-white/60 mb-2">
+                <span>Move to:</span>
+                <span className="text-white/80">
+                  Main: {getAreaCount('main')} | Side: {getAreaCount('side')} | Overflow: {getAreaCount('overflow')}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => moveToArea('main')}
+                  disabled={getAreaCount('main') >= 3}
+                  className="px-3 py-1.5 text-xs rounded bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+                >
+                  Main Deck
+                </button>
+                <button
+                  onClick={() => moveToArea('side')}
+                  disabled={getAreaCount('side') >= 3}
+                  className="px-3 py-1.5 text-xs rounded bg-yellow-600 hover:bg-yellow-500 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+                >
+                  Sideboard
+                </button>
+                <button
+                  onClick={() => moveToArea('overflow')}
+                  className="px-3 py-1.5 text-xs rounded bg-red-600 hover:bg-red-500 transition-colors"
+                >
+                  Overflow
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     )
